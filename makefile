@@ -5,7 +5,7 @@ BIN = bin
 CXX = g++
 LIB = lib
 CPPFLAGS = -c -g -I$(INC) -I/home/mer/kinect/NiTE-Linux-x64-2.2/Include -std=c++11 `pkg-config --cflags opencv libopenni2`
-LDFLAGS = `pkg-config --libs opencv libopenni2` -lViewer -lglut -lGL
+LDFLAGS =  -lViewer -lglut -lGL -lOpenNI2 -lNiTE2
 
 all: $(BIN)/main
 # ************ Compilación de módulos ************
@@ -21,9 +21,11 @@ $(LIB)/libViewer.a: $(OBJ)/Viewer.o
 $(OBJ)/main.o: $(SRC)/main.cpp $(INC)/Viewer.h
 	$(CXX) $(CPPFLAGS) $(SRC)/main.cpp -o $(OBJ)/main.o
 
-$(OBJ)/Viewer.o: $(SRC)/Viewer.cpp $(INC)/Viewer.h
+$(OBJ)/Viewer.o: $(SRC)/Viewer.cpp $(INC)/Viewer.h $(INC)/NiteSampleUtilities.h
 	$(CXX) $(CPPFLAGS) $(SRC)/Viewer.cpp -o $(OBJ)/Viewer.o
 
+#$(OBJ)/MWClosestPoint.o: $(SRC)/MWClosestPoint.cpp $(INC)/MWClosestPoint.h
+#		$(CXX) $(CPPFLAGS) $(SRC)/MWClosestPoint.cpp -o $(OBJ)/MWClosestPoint.o
 
 # ************ Generación de documentación ******************
 documentacion:
@@ -34,4 +36,4 @@ clean :
 	-rm $(OBJ)/* $(SRC)/*~ $(INC)/*~ ./*~
 
 mrproper : clean
-	-rm $(BIN)/* doc/html/*
+	-rm $(BIN)/* doc/html/* $(LIB)/*

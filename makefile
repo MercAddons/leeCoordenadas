@@ -4,6 +4,7 @@ OBJ = obj
 BIN = bin
 CXX = g++
 LIB = lib
+#Tener en cuenta que este makefile está echo especificamente para mi entorno y quizás halla que cambiar algunas rutas.
 CPPFLAGS = -c -g -I$(INC) -I/home/mer/kinect/NiTE-Linux-x64-2.2/Include -std=c++11 `pkg-config --cflags opencv libopenni2`
 LDFLAGS =  -lViewer -lglut -lGL -lOpenNI2 -lNiTE2
 

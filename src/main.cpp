@@ -9,6 +9,9 @@
 
 int main(int argc, char** argv)
 {
+
+	//Abre fichero para guardar el seguimiento de la persona
+	
 	openni::Status rc = openni::STATUS_OK;
 
 	SampleViewer sampleViewer("User Viewer");

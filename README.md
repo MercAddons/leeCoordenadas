@@ -16,4 +16,15 @@ Actualmente este repositorio genera un ejecutable en el que usando Kinect v2 (*X
 
 ### Como utilizar
 * Clonamos el repositorio en nuestro sistema
-> $ git clone https://github.com/MercAddons/leeCoordenadas.git
+```
+
+$ git clone https://github.com/MercAddons/leeCoordenadas.git
+
+```
+* Se debe permitir el acceso de nuestra aplicación a los algoritmos de NiTE, para ello se hace un enlace simbólico a ellos:
+
+```
+
+ln -s /home/mer/Kinect/NiTE-Linux-x64-2.2/Samples/Bin/NiTE2 NiTE2 
+
+```

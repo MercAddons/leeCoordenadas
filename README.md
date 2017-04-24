@@ -25,6 +25,16 @@ $ git clone https://github.com/MercAddons/leeCoordenadas.git
 
 ```
 
-ln -s /home/mer/Kinect/NiTE-Linux-x64-2.2/Samples/Bin/NiTE2 NiTE2 
+$ ln -s /home/user/Kinect/NiTE-Linux-x64-2.2/Samples/Bin/NiTE2 NiTE2
+
+```
+
+* Finalmente compilamos y ejecutamos
+
+```
+
+$ cd leeCoordenadas
+$ make
+$ ./bin/main
 
 ```

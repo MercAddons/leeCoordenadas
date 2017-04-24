@@ -1,0 +1,167 @@
+1. Estado del dispositivo
+    openni::Status   (STATUS_OK | STATUS_ERROR | STATUS_NOT_IMPLEMENTED | STATUS_NOT_SUPPORTED
+                      STATUS_BAD_PARAMETER | STATUS_OUT_OF_FLOW | STATUS_NO_DEVICE
+                      STATUS_TIME_OUT )
+2. Se declara un objeto SampleViewer (clase propia)
+    SampleViewer(const char*)
+
+    SampleViewer es una clase propia que está formada por:
+      float m_pDepthHist[MAX_DEPTH];
+      char m_strSampleName[ONI_MAX_STR];
+      openni::RGB888Pixel*		m_pTexMap;
+      unsigned int		m_nTexMapX;
+      unsigned int		m_nTexMapY;
+
+      openni::Device		m_device;
+      nite::UserTracker* m_pUserTracker;
+
+      nite::UserId m_poseUser;
+      uint64_t m_poseTime;
+      SampleViewer* ms_self;
+    Esta clase, junta el dispositivo, el UserTracker (reconoce usuarios), el vector de profundidad,
+    el nombre de ejemplo, un vector a los pizeles, el número de píxeles...
+    El constructor que se usa, iguala el puntero de SampleViewer al objeto que lo llama.
+    copia en m_strSampleName, strSampleName que se le pasa por argumento y se inicializa
+    m_pUserTracker (new nite::UserTracker)
+3. Se inicia el objeto deSampleViewer
+    SampleViewer::Init(argc,argv);
+
+    Esta función inicializa openni::OpenNI (paso 6 prueba.cpp)
+    Abre el dispositivo (Device::open(const char*))
+    Inicializa nite::NiTE::initialize();
+    UserTracker::create(Device*) -> Crea e inicializa un UserTracker vacío.
+
+    User Tracker ->  Es el objeto principal del algoritmo para detectar usuarios (esqueletos).
+    UserTracker, da acceso a la mitad de los algoritmos que NiTE proporciona. Segmentación de la escena,
+    esqueleto, detección de suelo, y detector de posición.
+    El primer proposito del UserTracker es encontrar todos los usuarios activos en la escena.
+    Rastra individualmente a cada humano que encuentra, y proporciona los medios para separarlos
+    del restos y del fondo. Cuando la escena ya ha sido segmentada, el UserTracker sirve
+    para llevar el seguimiento del esquleto y la detección de pose.
+    Cada usuario es provisto de un ID que permanece constante tanto como el usuario
+    permanece en la escena. Si el usuario sale de la escena, éste podría tener un ID
+    diferente si vuelve a ser detectado.
+
+    Devuelve InitOpenGL, que inicializar opengl...
+      glutInit, glutInitDisplay...
+
+4. SampleViewer::Run() -> entra en el bucle de procesamiento de eventos de GLUT -> glutMainLoop()
+
+El programa principal se acaba aquí. Vamos a explicar cada método de la clase SampleViewer por
+separado.
+
+void SampleViewer::Finalize()
+{
+   elimina el puntero userTracker propio de la clase
+   Cierra NiTE y OpenNI
+}
+
+updateUserState - es llamada por la función Displa. Se encarga de actualizar mostrar
+la información relevante al usuario de la aplicación.
+
+   Comprueba si el usuario ha sido recientemente detectado (UserData::isNew()), si lo es,
+   muestra por pantalla que es un nuevo usuario.
+   o Si el usuario es visible y no está dentro del vector de usuarios visibles:
+   o Si el usuario no es visible y está en el vector de usuarios visibles:
+   o si el usuario ha sido perdido:
+
+   Actualiza el valor del usuario en el vector de usuarios visibles.
+
+   Se comprueba el estado del esqueleto del usuario con el estado almacenado anteriormente.
+   Si son diferentes, se muestra por pantalla lo que corresponda,y se actualiza el vector
+   que almacena los estados.
+
+
+   UserData: proporciona la información disponible sobre un usuario detectado específico
+   SkeletonState: posibles estados de Skeleton { SKELETON_NONE 	No skeleton - skeleton was not requested
+                                                   SKELETON_CALIBRATING 	Skeleton requested, but still unavailable
+                                                   SKELETON_TRACKED  Skeleton available
+                                                   SKELETON_CALIBRATION_ERROR_NOT_IN_POSE 	Possible reasons as to why skeleton is unavailable
+                                                   SKELETON_CALIBRATION_ERROR_HANDS
+                                                   SKELETON_CALIBRATION_ERROR_HEAD
+                                                   SKELETON_CALIBRATION_ERROR_LEGS
+                                                   SKELETON_CALIBRATION_ERROR_TORSO }
+
+
+DrawStatusLabel(UserTracker*, UserData) - dibuja al usuario. (Se activa con la 'l')
+   color: para cada user, un color diferente
+   Convierte las coordenadas del usuario, que están en coordenadas de mundo real a coordenadas
+   nativas de mapa de profundidad, para ello usa la información proporcionada por la clase
+   UserData
+   Se especifica la posición del raster para operaciones de píxel. glRasterPos
+   y pone la
+
+   En OpenNI se usan dos tipos de coordenadas. Las que proporciona la clase Skeleton, que son
+   coordenadas de mundo real (coordenadas locales que usan una Sistema de Coordenadas Cartesiano
+   con el origen en el sensor) y coordenadas proyecttivas que miden la distancia en linea recta desde el sensor,
+   y, indican las coordenadas x/y usando píxeles en la imagen. La Z es la misma para ambos sistemas,
+   pero se necesita porque ésta puede afectar a la salida de x/y
+
+DrawFrameID(int) - pinta el número de frame actual  (se activa con la f)
+   pinta en rojo y en la esquina superior izquierda, el número del frame actual.
+
+DrawCenterOfMass(UsertTracker*, UserData) - pinta el centro de masa del usuario (se activa con la c)
+   convierte las coordenadas a coordenadas nativas de mapa de profundidad, y pinta
+   en blanco el "centro de masa"
+
+DrawBoundingBox(UserData) - pinta un rodeando al usuario (se activa con 'x')
+   Usa el método de UserData getBoundingBox, que devuelve la caja que envuelve al usuario.
+
+DrawLimb(UserTracker*,SkeletonJoint,SkeletonJoint,color) - dibuja un miembro de un usuario
+   Se convierten las coordenadas a coordenadas nativas de mapa de profundida.
+   Si la confianza de la posciión del usuario actual es total, se va a pintar el miembro de un color
+   específico (1-color)
+   si se tiene menos del 50% de confianza, se va a pintar gris
+   se dibujan los puntos del miembro (extremos) y se pinta el enlace que los une
+
+DrawSkeleton(UserTracker*,UserData) - Dibuja esqueleto (se activa con 's')
+   Llama a DrawLimb con cada miembro del usuario.
+
+Display - Se encarga de llevar la gestión de los frame que se van a mostrar en la ventana
+   Define un UserTrackerFrameRef, VideoFrameRef y Status.
+   se lee un frame del algoritmo UserTracker con el método readFrame y se almacena en el
+   anterior objeto creado de la clase UserTrackerFrameRef
+   en el VideoFrameRef se almacena el valor devuelto por UserTrackerFrameRef::getDepthFrame().
+   Si el mapa de píxeles está vacío, se declara tamaño para él y para la X y la Y de la imagen.
+   Se ejecutan las lineas de código para que funcione opengl correctamente
+   Si el frame actual es válido, se calcula el histograma de este y se almacena en el vector
+   de float que es miembro propio de SimpleViewer.
+   en un objeto UserMap se almacena el valor devuelto por UserTrackerFrameRef::getUserMap()
+   que es la segmentación de la escena, es decir, los píxeles correspondientes a los usuarios
+   y los correspondientes al fondo.
+   Se crea un vector de DepthPixel y sacamos la inforamción de la imagen del VideoFrameRef::getData()
+   Se calcula el número de columnas de la imágen
+   El for genera la imagen de la profundidad combinando con el histograma de esta
+   Se muestra la imagen como una textura de la ventana
+   Se consigen los usuarios que hay en las escena  y por cada usuario, se actualiza su estado
+   como corresponda. Si es nuevo se inicia el rastreo del esqueleto y el detector de pose,
+   si no, se comprueba si el usuario aún está en la escena y se pinta encima de la textura
+   lo que queramos... Al usuario, el centro de masa, la caja que lo encierra, el esqueleto...
+   Si se pone una pose determinada, los brazos cruzados, y se mantiene durante dos segundos,
+   el problema acaba.
+   Por último se pinta el mensaje del usuario y cambia el orde de los buffers de openGL
+
+   memset - llena un bloque de memoria. Modifica los primeros num bytes de la memoria apuntada
+   por ptr al valor que contenga value.
+   UserTrackerFrameRef - almacena una isntantanea de un único frame de salida desde el algoritmo
+      UserTracker. Este frame corresponde a una entrada del frame de profundidad. Contiene
+      toda la información de los usuarios, como la imformación del suelo.
+   UserId - is un ID persistente para un usuario detectado específico.
+   UserMap - almacenala salida del algoritmo UserTracker
+   openni::DepthPixel - tipo de pixel que se usa para almacenar imágenes de profundidad
+   openni::RGB888Pixel - estructura que contiene el valor de una imagen en color en
+   formato RGB 24-bit
+
+OnKey(unsigned char) - Controla el gestor de teclado.
+   q -> finaliza
+   s -> dibuja esqueleto
+   l -> dibuja la etiqueta de estado del usuario
+   c -> dibuja el centro de masa
+   x -> dibuja la caja envolvente
+   b -> dibuja el fondo
+   d -> dibuja la imagen profundidad
+   f -> dibuja el id del frame
+
+InitOpenGL(int,char**) - Inicializa openGL
+
+InitOpenGLHooks - inicializa los hooks de opengl

@@ -8,4 +8,12 @@ Actualmente este repositorio genera un ejecutable en el que usando Kinect v2 (*X
 
 ## Modo de empleo
 ### Requisitos
-  * Item 1
+  * [LibFreenect2](https://github.com/OpenKinect/libfreenect2#debianubuntu-1404)
+  * [IAI Kinect2](https://github.com/code-iai/iai_kinect2)
+  * [OpenNI2](https://github.com/OpenNI/OpenNI2.git)
+  * [NiTE2](http://download.dahoo.fr/Ressources/openNi/last%20version%20Nite/)
+  * [OpenCV](https://github.com/opencv/opencv/archive/2.4.13.zip)
+
+### Como utilizar
+* Clonamos el repositorio en nuestro sistema
+> $ git clone https://github.com/MercAddons/leeCoordenadas.git
